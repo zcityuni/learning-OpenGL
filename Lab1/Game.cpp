@@ -103,6 +103,20 @@ void Game::Initialise()
 	glEnable(GL_DEPTH_TEST);
 }
 
+// Draw triangles
+void Game::DrawTriangle(glm::vec3 t_params) {
+	// Bind the VAO
+	glBindVertexArray(m_uiVAO);
+
+	// Set the modeling matrix
+	*m_pModelMatrix = glm::translate(glm::mat4(1), t_params); // Using GL Math
+	m_pShaderProgram->SetUniform("modelMatrix", m_pModelMatrix);
+	m_pShaderProgram->SetUniform("t", (float)m_pTimer->Elapsed());
+
+	// Render the triangle consisting of 3 vertices
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+}
+
 // Render method runs repeatedly in a loop
 void Game::Render() 
 {
@@ -110,16 +124,9 @@ void Game::Render()
 	// Clear the buffer for rendering a new frame
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	// Bind the VAO
-	glBindVertexArray(m_uiVAO);
-	
-	// Set the modeling matrix
-	*m_pModelMatrix = glm::translate(glm::mat4(1), glm::vec3(0, 0, 0));
-	m_pShaderProgram->SetUniform("modelMatrix", m_pModelMatrix);
-	m_pShaderProgram->SetUniform("t", (float) m_pTimer->Elapsed());
-
-	// Render the triangle consisting of 3 vertices
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	for (int i = 0; i < 10; ++i) {
+		DrawTriangle(glm::vec3(0, 0, i*0.5));
+	}
 
 	// Swap buffers to show the rendered image
 	SwapBuffers(gameWindow.Hdc());		

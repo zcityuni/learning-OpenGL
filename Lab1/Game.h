@@ -28,6 +28,7 @@ public:
 	LRESULT ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_param);
 	void SetHinstance(HINSTANCE hinstance);
 	WPARAM Execute();
+	void DrawTriangle(glm::vec3 t_params);
 
 private:
 	void GameLoop();
