@@ -103,9 +103,23 @@ void Game::Render()
 	// glm::mat4 mModelMatrix = glm::mat4(1);
 	glutil::MatrixStack modelMatrixStack;
 	modelMatrixStack.Rotate(glm::vec3(0, -1, 0), m_rotY);
-	m_pShaderProgram->SetUniform("modelMatrix", modelMatrixStack.Top());
-	m_pSphere->Render();
+	modelMatrixStack.Push(); {
+		m_pShaderProgram->SetUniform("modelMatrix", modelMatrixStack.Top());
+		m_pSphere->Render();
+	} modelMatrixStack.Pop();
 
+	modelMatrixStack.Push(); {
+		modelMatrixStack.Translate(glm::vec3(-1, 1, 0));
+		m_pShaderProgram->SetUniform("modelMatrix", modelMatrixStack.Top());
+		m_pSphere->Render();
+	} modelMatrixStack.Pop();
+
+	modelMatrixStack.Push(); {
+		modelMatrixStack.Translate(glm::vec3(1, 1, 0));
+		m_pShaderProgram->SetUniform("modelMatrix", modelMatrixStack.Top());
+		m_pSphere->Render();
+	} modelMatrixStack.Pop();
+	
 	// Swap buffers to show the rendered image
 	SwapBuffers(rGameWindow.Hdc());		
 }
