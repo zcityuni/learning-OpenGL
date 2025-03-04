@@ -14,5 +14,5 @@ out vec3 vColour;
 void main()
 {
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(inPosition, 1.0);
-	vColour = inColour * (sin(t)/2);
+	vColour = inColour * (0.5 + 0.5*sin(t));
 }
