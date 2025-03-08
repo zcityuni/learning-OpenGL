@@ -16,6 +16,12 @@ void main()
 	// Read texel (pixel from image)
 	vec4 vTexColour = texture(sampler0, vTexCoord);	
 
+	// Disintegration
+	if (vTexColour.r < fract(t/5)) discard;
+
+	if (vTexColour.r < (0.6-fract(t/5))) discard;
+
+
 	// Some shading
 	float fAmbientIntensity = 0.15f;
 	float fDiffuseIntensity = max(0.0, dot(normalize(vNormal), normalize(vlightDirection)));

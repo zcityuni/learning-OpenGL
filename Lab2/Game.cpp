@@ -102,23 +102,61 @@ void Game::Render()
 	// Set the modeling matrix
 	// glm::mat4 mModelMatrix = glm::mat4(1);
 	glutil::MatrixStack modelMatrixStack;
-	modelMatrixStack.Rotate(glm::vec3(0, -1, 0), m_rotY);
+	float s = sin(m_rotY / 100.0f);
+
+	// Scale all both sets of spheres
+	// modelMatrixStack.Scale(s);
+	// First set of roating spheres
 	modelMatrixStack.Push(); {
-		m_pShaderProgram->SetUniform("modelMatrix", modelMatrixStack.Top());
-		m_pSphere->Render();
+		modelMatrixStack.Translate(glm::vec3(-5, 0, 0));
+
+		// Scale only one set of spheres
+		// modelMatrixStack.Scale(s);
+
+		modelMatrixStack.Rotate(glm::vec3(0, -1, 0), m_rotY);
+		modelMatrixStack.Push(); {
+			// Scale only a single sphere
+			modelMatrixStack.Scale(s);
+			m_pShaderProgram->SetUniform("modelMatrix", modelMatrixStack.Top());
+			m_pSphere->Render();
+		} modelMatrixStack.Pop();
+
+		modelMatrixStack.Push(); {
+			modelMatrixStack.Translate(glm::vec3(-1, 1, 0));
+			m_pShaderProgram->SetUniform("modelMatrix", modelMatrixStack.Top());
+			m_pSphere->Render();
+		} modelMatrixStack.Pop();
+
+		modelMatrixStack.Push(); {
+			modelMatrixStack.Translate(glm::vec3(1, 1, 0));
+			m_pShaderProgram->SetUniform("modelMatrix", modelMatrixStack.Top());
+			m_pSphere->Render();
+		} modelMatrixStack.Pop();
 	} modelMatrixStack.Pop();
 
+	// Second set of rotating spheres
 	modelMatrixStack.Push(); {
-		modelMatrixStack.Translate(glm::vec3(-1, 1, 0));
-		m_pShaderProgram->SetUniform("modelMatrix", modelMatrixStack.Top());
-		m_pSphere->Render();
-	} modelMatrixStack.Pop();
+		modelMatrixStack.Translate(glm::vec3(5, 0, 0));
 
-	modelMatrixStack.Push(); {
-		modelMatrixStack.Translate(glm::vec3(1, 1, 0));
-		m_pShaderProgram->SetUniform("modelMatrix", modelMatrixStack.Top());
-		m_pSphere->Render();
+		modelMatrixStack.Rotate(glm::vec3(0, -1, 0), m_rotY);
+		modelMatrixStack.Push(); {
+			m_pShaderProgram->SetUniform("modelMatrix", modelMatrixStack.Top());
+			m_pSphere->Render();
+		} modelMatrixStack.Pop();
+
+		modelMatrixStack.Push(); {
+			modelMatrixStack.Translate(glm::vec3(-1, 1, 0));
+			m_pShaderProgram->SetUniform("modelMatrix", modelMatrixStack.Top());
+			m_pSphere->Render();
+		} modelMatrixStack.Pop();
+
+		modelMatrixStack.Push(); {
+			modelMatrixStack.Translate(glm::vec3(1, 1, 0));
+			m_pShaderProgram->SetUniform("modelMatrix", modelMatrixStack.Top());
+			m_pSphere->Render();
+		} modelMatrixStack.Pop();
 	} modelMatrixStack.Pop();
+	
 	
 	// Swap buffers to show the rendered image
 	SwapBuffers(rGameWindow.Hdc());		
