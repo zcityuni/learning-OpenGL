@@ -41,6 +41,7 @@ Source code drawn from a number of sources and examples, including contributions
 #include "MatrixStack.h"
 #include "OpenAssetImportMesh.h"
 #include "Audio.h"
+#include "CatmullRom.h"
 
 // Constructor
 Game::Game()
@@ -55,6 +56,7 @@ Game::Game()
 	m_pSphere = NULL;
 	m_pHighResolutionTimer = NULL;
 	m_pAudio = NULL;
+	m_pCatmullRom = NULL;
 
 	m_dt = 0.0;
 	m_framesPerSecond = 0;
@@ -102,6 +104,8 @@ void Game::Initialise()
 	m_pHorseMesh = new COpenAssetImportMesh;
 	m_pSphere = new CSphere;
 	m_pAudio = new CAudio;
+	m_pCatmullRom = new CCatmullRom();
+
 
 	RECT dimensions = m_gameWindow.GetDimensions();
 
@@ -290,9 +294,27 @@ void Game::Render()
 // Update method runs repeatedly with the Render method
 void Game::Update() 
 {
-	// m_pCamera->Set(m_pCamera->GetPosition(), glm::vec3(0, 0, 150), m_pCamera->GetUpVector());
+	// m_pCamera->Set(m_pCamera->GetPosition(), glm::vec3(0, 0, 0), m_pCamera->GetUpVector());
+	m_pCamera->Set(glm::vec3(0, 300, 0.1), glm::vec3(0, 0, 0), m_pCamera->GetUpVector());
 	// Update the camera using the amount of time that has elapsed to avoid framerate dependent motion
 	//m_pCamera->Update(m_dt);
+
+	
+	// Spline control points
+	glm::vec3 p0 = glm::vec3(-500, 10, -200);
+	glm::vec3 p1 = glm::vec3(0, 10, 0);
+	glm::vec3 p2 = glm::vec3(0, 10, 200);
+	glm::vec3 p3 = glm::vec3(500, 10, 200);
+
+	static float t = 0.0f;
+	t += 0.0001f * m_dt; 
+	if (t > 1.0f) {
+		t = 0.0f;
+	}
+
+	// New camera pos
+	glm::vec3 cameraPos = m_pCatmullRom->Interpolate(p0, p1, p2, p3, t);
+	m_pCamera->Set(cameraPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 
 	m_pAudio->Update();
 

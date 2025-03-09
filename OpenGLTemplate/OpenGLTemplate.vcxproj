@@ -125,6 +125,7 @@
   <ItemGroup>
     <ClInclude Include="Audio.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="CatmullRom.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="Cubemap.h" />
     <ClInclude Include="FreeTypeFont.h" />
@@ -144,6 +145,7 @@
   <ItemGroup>
     <ClCompile Include="Audio.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="CatmullRom.cpp" />
     <ClCompile Include="Cubemap.cpp" />
     <ClCompile Include="FreeTypeFont.cpp" />
     <ClCompile Include="Game.cpp" />

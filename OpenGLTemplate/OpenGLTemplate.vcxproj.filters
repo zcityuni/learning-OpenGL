@@ -68,6 +68,9 @@
     <ClInclude Include="VertexBufferObjectIndexed.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CatmullRom.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Audio.cpp">
@@ -117,6 +120,9 @@
     </ClCompile>
     <ClCompile Include="Plane.cpp">
       <Filter>Source Files\BasicShapes</Filter>
+    </ClCompile>
+    <ClCompile Include="CatmullRom.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

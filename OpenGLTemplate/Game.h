@@ -2,6 +2,7 @@
 
 #include "Common.h"
 #include "GameWindow.h"
+#include "CatmullRom.h"
 
 // Classes used in game.  For a new class, declare it here and provide a pointer to an object of this class below.  Then, in Game.cpp, 
 // include the header.  In the Game constructor, set the pointer to NULL and in Game::Initialise, create a new object.  Don't forget to 
@@ -35,6 +36,7 @@ private:
 	CSphere *m_pSphere;
 	CHighResolutionTimer *m_pHighResolutionTimer;
 	CAudio *m_pAudio;
+	CCatmullRom *m_pCatmullRom;
 
 	// Some other member variables
 	double m_dt;
