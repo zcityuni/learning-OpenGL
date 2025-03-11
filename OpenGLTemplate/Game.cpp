@@ -76,6 +76,7 @@ Game::~Game()
 	delete m_pHorseMesh;
 	delete m_pSphere;
 	delete m_pAudio;
+	delete m_pCatmullRom;
 
 	if (m_pShaderPrograms != NULL) {
 		for (unsigned int i = 0; i < m_pShaderPrograms->size(); i++)
@@ -178,6 +179,16 @@ void Game::Initialise()
 	m_pAudio->LoadEventSound("resources\\Audio\\Boing.wav");					// Royalty free sound from freesound.org
 	m_pAudio->LoadMusicStream("resources\\Audio\\DST-Garote.mp3");	// Royalty free music from http://www.nosoapradio.us/
 	//m_pAudio->PlayMusicStream();
+
+	// Spline path creation (to visualise not to move along, that would be done in Game::Update())
+	glm::vec3 p1 = glm::vec3(-50.0f, 10.0f, 150.0f);  // Start of the arc
+	glm::vec3 p2 = glm::vec3(120.0f, 10.0f, -20.0f);  // End of the arc
+
+	// Control points
+	glm::vec3 p0 = glm::vec3(100.0f, 10.0f, 250.0f);  
+	glm::vec3 p3 = glm::vec3(1150.0f, 10.0f, 550.0f);
+	m_pCatmullRom->CreatePath(p0, p1, p2, p3);
+
 }
 
 // Render method runs repeatedly in a loop
@@ -282,6 +293,15 @@ void Game::Render()
 		//pMainProgram->SetUniform("bUseTexture", false);
 		m_pSphere->Render();
 	modelViewMatrixStack.Pop();
+
+	modelViewMatrixStack.Push();
+		pMainProgram->SetUniform("bUseTexture", false);
+		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+		pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+		// Render spline path
+		m_pCatmullRom->RenderPath();
+	modelViewMatrixStack.Pop();
+
 		
 	// Draw the 2D graphics after the 3D graphics
 	DisplayFrameRate();
@@ -295,16 +315,18 @@ void Game::Render()
 void Game::Update() 
 {
 	// m_pCamera->Set(m_pCamera->GetPosition(), glm::vec3(0, 0, 0), m_pCamera->GetUpVector());
-	m_pCamera->Set(glm::vec3(0, 300, 0.1), glm::vec3(0, 0, 0), m_pCamera->GetUpVector());
+	m_pCamera->Set(glm::vec3(0, 500, 0.1), glm::vec3(0, 0, 0), m_pCamera->GetUpVector());
 	// Update the camera using the amount of time that has elapsed to avoid framerate dependent motion
 	//m_pCamera->Update(m_dt);
 
+
 	
+	// Moving and interpolating along the spline 
 	// Spline control points
-	glm::vec3 p0 = glm::vec3(-500, 10, -200);
-	glm::vec3 p1 = glm::vec3(0, 10, 0);
-	glm::vec3 p2 = glm::vec3(0, 10, 200);
-	glm::vec3 p3 = glm::vec3(500, 10, 200);
+	glm::vec3 p1 = glm::vec3(-50.0f, 20.0f, 150.0f);  // Start of the arc
+	glm::vec3 p2 = glm::vec3(120.0f, 20.0f, -20.0f);  // End of the arc
+	glm::vec3 p0 = glm::vec3(100.0f, 20.0f, 250.0f);
+	glm::vec3 p3 = glm::vec3(1150.0f, 20.0f, 550.0f);
 
 	static float t = 0.0f;
 	t += 0.0001f * m_dt; 
@@ -315,6 +337,7 @@ void Game::Update()
 	// New camera pos
 	glm::vec3 cameraPos = m_pCatmullRom->Interpolate(p0, p1, p2, p3, t);
 	m_pCamera->Set(cameraPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	
 
 	m_pAudio->Update();
 
