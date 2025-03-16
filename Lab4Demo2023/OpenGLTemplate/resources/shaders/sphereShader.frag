@@ -3,6 +3,7 @@
 in vec3 vColour;			// Note: colour is smoothly interpolated (default)
 out vec4 vOutputColour;
 in float fIntensity;
+uniform int levels; // receive the uniform var from the client program Game.cpp
 
 
 vec3 toonColour(float fIntensity)
@@ -27,5 +28,7 @@ vec3 toonColour(float fIntensity)
 void main()
 {	
 	//vOutputColour = vec4(vColour, 1.0);
-	vOutputColour = vec4(toonColour(fIntensity), 1.0);
+	vec3 quantisedColour = floor(vColour * float(levels)) / levels;
+	//vOutputColour = vec4(toonColour(fIntensity), 0.5);
+	vOutputColour = vec4(quantisedColour, 0.5);
 }

@@ -55,6 +55,7 @@ Game::Game()
 	m_framesPerSecond = 0;
 	m_frameCount = 0;
 	m_elapsedTime = 0.0f;
+	m_levels = 5;
 }
 
 // Destructor
@@ -194,6 +195,9 @@ void Game::Render()
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	// Set up a matrix stack
 	glutil::MatrixStack modelViewMatrixStack;
 	modelViewMatrixStack.SetIdentity();
@@ -252,6 +256,7 @@ void Game::Render()
 	pSphereProgram->SetUniform("light1.Ls", glm::vec3(1.0f, 1.0f, 1.0f));
 	pSphereProgram->SetUniform("light1.position", viewMatrix*lightPosition1);
 	pSphereProgram->SetUniform("t", m_t);
+	pSphereProgram->SetUniform("levels", m_levels);
 
 	// Render the sphere
 	modelViewMatrixStack.Push(); {
@@ -337,8 +342,6 @@ void Game::GameLoop()
 	Update();
 	Render();
 	m_dt = m_pHighResolutionTimer->Elapsed();
-	
-
 }
 
 
@@ -417,11 +420,22 @@ LRESULT Game::ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_p
 		case VK_ESCAPE:
 			PostQuitMessage(0);
 			break;
+		
+		// Increase and decrease toon shading color levels
 		case '1':
-			m_pAudio->PlayEventSound();
+			m_levels++;
+			if (m_levels > 10) m_levels = 10;
 			break;
+
+		case '2':
+			m_levels--;
+			if (m_levels < 2) m_levels = 2;
+			break;
+		//case '1':
+			//m_pAudio->PlayEventSound();
+			//break;
 		case VK_F1:
-			m_pAudio->PlayEventSound();
+			//m_pAudio->PlayEventSound();
 			break;
 		}
 		break;
