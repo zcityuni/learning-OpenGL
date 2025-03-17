@@ -43,6 +43,8 @@ Source code drawn from a number of sources and examples, including contributions
 #include "Audio.h"
 #include "CatmullRom.h"
 
+GLuint cubeVAO, cubeVBO, cubeEBO;
+
 // Constructor
 Game::Game()
 {
@@ -51,11 +53,7 @@ Game::Game()
 	m_pShaderPrograms = NULL;
 	m_pPlanarTerrain = NULL;
 	m_pFtFont = NULL;
-	m_pBarrelMesh = NULL;
-	m_pHorseMesh = NULL;
-	m_pSphere = NULL;
 	m_pHighResolutionTimer = NULL;
-	m_pAudio = NULL;
 	m_pCatmullRom = NULL;
 
 	m_dt = 0.0;
@@ -72,10 +70,6 @@ Game::~Game()
 	delete m_pSkybox;
 	delete m_pPlanarTerrain;
 	delete m_pFtFont;
-	delete m_pBarrelMesh;
-	delete m_pHorseMesh;
-	delete m_pSphere;
-	delete m_pAudio;
 	delete m_pCatmullRom;
 
 	if (m_pShaderPrograms != NULL) {
@@ -101,10 +95,6 @@ void Game::Initialise()
 	m_pShaderPrograms = new vector <CShaderProgram *>;
 	m_pPlanarTerrain = new CPlane;
 	m_pFtFont = new CFreeTypeFont;
-	m_pBarrelMesh = new COpenAssetImportMesh;
-	m_pHorseMesh = new COpenAssetImportMesh;
-	m_pSphere = new CSphere;
-	m_pAudio = new CAudio;
 	m_pCatmullRom = new CCatmullRom();
 
 
@@ -166,19 +156,6 @@ void Game::Initialise()
 	m_pFtFont->LoadSystemFont("arial.ttf", 32);
 	m_pFtFont->SetShaderProgram(pFontProgram);
 
-	// Load some meshes in OBJ format
-	m_pBarrelMesh->Load("resources\\models\\Barrel\\Barrel02.obj");  // Downloaded from http://www.psionicgames.com/?page_id=24 on 24 Jan 2013
-	m_pHorseMesh->Load("resources\\models\\Horse\\Horse2.obj");  // Downloaded from http://opengameart.org/content/horse-lowpoly on 24 Jan 2013
-
-	// Create a sphere
-	m_pSphere->Create("resources\\textures\\", "dirtpile01.jpg", 25, 25);  // Texture downloaded from http://www.psionicgames.com/?page_id=26 on 24 Jan 2013
-	glEnable(GL_CULL_FACE);
-
-	// Initialise audio and play background music
-	m_pAudio->Initialise();
-	m_pAudio->LoadEventSound("resources\\Audio\\Boing.wav");					// Royalty free sound from freesound.org
-	m_pAudio->LoadMusicStream("resources\\Audio\\DST-Garote.mp3");	// Royalty free music from http://www.nosoapradio.us/
-	//m_pAudio->PlayMusicStream();
 
 	// Spline path creation (to visualise not to move along, that would be done in Game::Update())
 	glm::vec3 p1 = glm::vec3(-50.0f, 10.0f, 150.0f);  // Start of the arc
@@ -188,16 +165,97 @@ void Game::Initialise()
 	glm::vec3 p0 = glm::vec3(100.0f, 10.0f, 250.0f);  
 	glm::vec3 p3 = glm::vec3(1150.0f, 10.0f, 550.0f);
 	m_pCatmullRom->CreatePath(p0, p1, p2, p3);
+	
+	float cubeVertices[] = {
+		// Front face (z = -1) ccw
+		//  Position              Normal             Texutre
+		-1.0f, -1.0f, -1.0f,      0.0f,  0.0f, -1.0f,  0.0f, 0.0f, // bottom left
+		 1.0f,  1.0f, -1.0f,      0.0f,  0.0f, -1.0f,  1.0f, 1.0f, // top right
+		 1.0f, -1.0f, -1.0f,      0.0f,  0.0f, -1.0f,  1.0f, 0.0f, // bottom right
+		-1.0f, -1.0f, -1.0f,      0.0f,  0.0f, -1.0f,  0.0f, 0.0f, // bottom left
+		-1.0f,  1.0f, -1.0f,      0.0f,  0.0f, -1.0f,  0.0f, 1.0f, // top left
+		 1.0f,  1.0f, -1.0f,      0.0f,  0.0f, -1.0f,  1.0f, 1.0f, // top right
+
+		 // Back face (z = +1) 
+		 -1.0f, -1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  0.0f, 0.0f, // bottom left
+		  1.0f, -1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  1.0f, 0.0f, // bottom right
+		 -1.0f,  1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  0.0f, 1.0f, // top left
+		 -1.0f,  1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  0.0f, 1.0f, // top left
+		  1.0f, -1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  1.0f, 0.0f, // bottom right
+		  1.0f,  1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  1.0f, 1.0f, // top right
+
+		  // Right face (x = +1) 
+		   1.0f, -1.0f, -1.0f,      1.0f,  0.0f,  0.0f,  0.0f, 0.0f, // bottom front
+		   1.0f,  1.0f,  1.0f,      1.0f,  0.0f,  0.0f,  1.0f, 1.0f, // top back
+		   1.0f, -1.0f,  1.0f,      1.0f,  0.0f,  0.0f,  1.0f, 0.0f, // bottom back
+		   1.0f, -1.0f, -1.0f,      1.0f,  0.0f,  0.0f,  0.0f, 0.0f, // bottom front
+		   1.0f,  1.0f, -1.0f,      1.0f,  0.0f,  0.0f,  0.0f, 1.0f, // top front
+		   1.0f,  1.0f,  1.0f,      1.0f,  0.0f,  0.0f,  1.0f, 1.0f, // top back
+
+		   // Left face (x = -1) 
+		   -1.0f, -1.0f,  1.0f,     -1.0f,  0.0f,  0.0f,  0.0f, 0.0f, // bottom back
+		   -1.0f,  1.0f, -1.0f,     -1.0f,  0.0f,  0.0f,  1.0f, 1.0f, // top front
+		   -1.0f, -1.0f, -1.0f,     -1.0f,  0.0f,  0.0f,  1.0f, 0.0f, // bottom front
+		   -1.0f, -1.0f,  1.0f,     -1.0f,  0.0f,  0.0f,  0.0f, 0.0f, // bottom back
+		   -1.0f,  1.0f,  1.0f,     -1.0f,  0.0f,  0.0f,  0.0f, 1.0f, // top back
+		   -1.0f,  1.0f, -1.0f,     -1.0f,  0.0f,  0.0f,  1.0f, 1.0f, // top front
+
+		   // Top face (y = +1)
+		   -1.0f,  1.0f, -1.0f,      0.0f,  1.0f,  0.0f,  0.0f, 0.0f, // front left
+			1.0f,  1.0f,  1.0f,      0.0f,  1.0f,  0.0f,  1.0f, 1.0f, // back right
+			1.0f,  1.0f, -1.0f,      0.0f,  1.0f,  0.0f,  1.0f, 0.0f, // front right
+		   -1.0f,  1.0f, -1.0f,      0.0f,  1.0f,  0.0f,  0.0f, 0.0f, // front left
+		   -1.0f,  1.0f,  1.0f,      0.0f,  1.0f,  0.0f,  0.0f, 1.0f, // back left
+			1.0f,  1.0f,  1.0f,      0.0f,  1.0f,  0.0f,  1.0f, 1.0f, // back right
+
+		   -1.0f, -1.0f, -1.0f,      0.0f, -1.0f,  0.0f,  0.0f, 1.0f, // front left
+		    1.0f, -1.0f, -1.0f,      0.0f, -1.0f,  0.0f,  1.0f, 1.0f, // front right
+		   -1.0f, -1.0f,  1.0f,      0.0f, -1.0f,  0.0f,  0.0f, 0.0f, // back left
+
+			1.0f, -1.0f, -1.0f,      0.0f, -1.0f,  0.0f,  1.0f, 1.0f, // front right
+			1.0f, -1.0f,  1.0f,      0.0f, -1.0f,  0.0f,  1.0f, 0.0f, // back right
+		   -1.0f, -1.0f,  1.0f,      0.0f, -1.0f,  0.0f,  0.0f, 0.0f  // back left
+	};
+
+
+	// Generate and bind vao for cube
+	glGenVertexArrays(1, &cubeVAO);
+	glBindVertexArray(cubeVAO);
+	// Generate and bind vbo and then upload vertices
+	glGenBuffers(1, &cubeVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+
+	// Define stride
+	GLsizei stride = 8 * sizeof(float); 
+	// Position: 0
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
+	glEnableVertexAttribArray(0);
+	// Normal: 1
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	// Texture coordinate: 2
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+	// Unbind vao
+	glBindVertexArray(0);
+
 
 }
 
 // Render method runs repeatedly in a loop
 void Game::Render() 
 {
-	
 	// Clear the buffers and enable depth testing (z-buffering)
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+
+	//glDisable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glFrontFace(GL_CCW);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// Set up a matrix stack
 	glutil::MatrixStack modelViewMatrixStack;
@@ -260,49 +318,28 @@ void Game::Render()
 	pMainProgram->SetUniform("material1.Md", glm::vec3(0.5f));	// Diffuse material reflectance
 	pMainProgram->SetUniform("material1.Ms", glm::vec3(1.0f));	// Specular material reflectance	
 
-
-	// Render the horse 
-	modelViewMatrixStack.Push();
-		modelViewMatrixStack.Translate(glm::vec3(0.0f, 0.0f, 0.0f));
-		modelViewMatrixStack.Rotate(glm::vec3(0.0f, 1.0f, 0.0f), 180.0f);
-		modelViewMatrixStack.Scale(2.5f);
-		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
-		pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-		m_pHorseMesh->Render();
-	modelViewMatrixStack.Pop();
-
-
-	
-	// Render the barrel 
-	modelViewMatrixStack.Push();
-		modelViewMatrixStack.Translate(glm::vec3(100.0f, 0.0f, 0.0f));
-		modelViewMatrixStack.Scale(5.0f);
-		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
-		pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-		m_pBarrelMesh->Render();
-	modelViewMatrixStack.Pop();
-	
-
-	// Render the sphere
-	modelViewMatrixStack.Push();
-		modelViewMatrixStack.Translate(glm::vec3(0.0f, 2.0f, 150.0f));
-		modelViewMatrixStack.Scale(2.0f);
-		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
-		pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-		// To turn off texture mapping and use the sphere colour only (currently white material), uncomment the next line
-		//pMainProgram->SetUniform("bUseTexture", false);
-		m_pSphere->Render();
-	modelViewMatrixStack.Pop();
-
+	// Render spline path
 	modelViewMatrixStack.Push();
 		pMainProgram->SetUniform("bUseTexture", false);
 		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 		pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-		// Render spline path
 		m_pCatmullRom->RenderPath();
 	modelViewMatrixStack.Pop();
 
-		
+	// Set up your transformation matrix for the cube
+	modelViewMatrixStack.Push();
+	// For example, translate the cube  to (x, y, z)
+	modelViewMatrixStack.Scale(5.0f);
+	modelViewMatrixStack.Translate(glm::vec3(0.0f, 10.0f, 0.0f));
+	pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+	pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+
+	// Bind the cube VAO and render it
+	glBindVertexArray(cubeVAO);
+	glDrawArrays(GL_TRIANGLES, 0, 36); // 36 vertices cube
+	glBindVertexArray(0);
+	modelViewMatrixStack.Pop();
+
 	// Draw the 2D graphics after the 3D graphics
 	DisplayFrameRate();
 
@@ -314,13 +351,11 @@ void Game::Render()
 // Update method runs repeatedly with the Render method
 void Game::Update() 
 {
-	// m_pCamera->Set(m_pCamera->GetPosition(), glm::vec3(0, 0, 0), m_pCamera->GetUpVector());
-	m_pCamera->Set(glm::vec3(0, 500, 0.1), glm::vec3(0, 0, 0), m_pCamera->GetUpVector());
+	//m_pCamera->Set(m_pCamera->GetPosition(), glm::vec3(0, 0, 0), m_pCamera->GetUpVector());
+	//m_pCamera->Set(glm::vec3(0, 500, 0.1), glm::vec3(0, 0, 0), m_pCamera->GetUpVector());
 	// Update the camera using the amount of time that has elapsed to avoid framerate dependent motion
-	//m_pCamera->Update(m_dt);
-
-
-	
+	m_pCamera->Update(m_dt);
+	/*
 	// Moving and interpolating along the spline 
 	// Spline control points
 	glm::vec3 p1 = glm::vec3(-50.0f, 20.0f, 150.0f);  // Start of the arc
@@ -337,11 +372,9 @@ void Game::Update()
 	// New camera pos
 	glm::vec3 cameraPos = m_pCatmullRom->Interpolate(p0, p1, p2, p3, t);
 	m_pCamera->Set(cameraPos, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-	
+	*/	
 
-	m_pAudio->Update();
-
-	
+	//m_pAudio->Update();
 }
 
 
@@ -394,14 +427,11 @@ void Game::GameLoop()
 	}
 	*/
 	
-	
 	// Variable timer
 	m_pHighResolutionTimer->Start();
 	Update();
 	Render();
 	m_dt = m_pHighResolutionTimer->Elapsed();
-	
-
 }
 
 
