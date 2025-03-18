@@ -164,7 +164,8 @@ void Game::Initialise()
 	// Control points
 	glm::vec3 p0 = glm::vec3(100.0f, 10.0f, 250.0f);  
 	glm::vec3 p3 = glm::vec3(1150.0f, 10.0f, 550.0f);
-	m_pCatmullRom->CreatePath(p0, p1, p2, p3);
+	//m_pCatmullRom->CreatePath(p0, p1, p2, p3);
+	m_pCatmullRom->CreateCentreline();
 	
 	float cubeVertices[] = {
 		// Front face (z = -1) ccw
@@ -323,8 +324,10 @@ void Game::Render()
 		pMainProgram->SetUniform("bUseTexture", false);
 		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 		pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-		m_pCatmullRom->RenderPath();
+		m_pCatmullRom->RenderCentreline();
 	modelViewMatrixStack.Pop();
+
+
 
 	// Set up your transformation matrix for the cube
 	modelViewMatrixStack.Push();
