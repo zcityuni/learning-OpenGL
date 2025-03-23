@@ -60,6 +60,8 @@ Game::Game()
 	m_framesPerSecond = 0;
 	m_frameCount = 0;
 	m_elapsedTime = 0.0f;
+	m_currentDistance = 0.0f;
+	m_cameraSpeed = 0.01f;
 }
 
 // Destructor
@@ -167,9 +169,10 @@ void Game::Initialise()
 	//m_pCatmullRom->CreatePath(p0, p1, p2, p3);
 	m_pCatmullRom->CreateCentreline();
 	
+	// Put into a different class soon
 	float cubeVertices[] = {
 		// Front face (z = -1) ccw
-		//  Position              Normal             Texutre
+		//  Position              Normal             Tex
 		-1.0f, -1.0f, -1.0f,      0.0f,  0.0f, -1.0f,  0.0f, 0.0f, // bottom left
 		 1.0f,  1.0f, -1.0f,      0.0f,  0.0f, -1.0f,  1.0f, 1.0f, // top right
 		 1.0f, -1.0f, -1.0f,      0.0f,  0.0f, -1.0f,  1.0f, 0.0f, // bottom right
@@ -178,46 +181,45 @@ void Game::Initialise()
 		 1.0f,  1.0f, -1.0f,      0.0f,  0.0f, -1.0f,  1.0f, 1.0f, // top right
 
 		 // Back face (z = +1) 
-		 -1.0f, -1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  0.0f, 0.0f, // bottom left
-		  1.0f, -1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  1.0f, 0.0f, // bottom right
-		 -1.0f,  1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  0.0f, 1.0f, // top left
-		 -1.0f,  1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  0.0f, 1.0f, // top left
-		  1.0f, -1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  1.0f, 0.0f, // bottom right
-		  1.0f,  1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  1.0f, 1.0f, // top right
+		-1.0f, -1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  0.0f, 0.0f, // bottom left
+		 1.0f, -1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  1.0f, 0.0f, // bottom right
+		-1.0f,  1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  0.0f, 1.0f, // top left
+		-1.0f,  1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  0.0f, 1.0f, // top left
+		 1.0f, -1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  1.0f, 0.0f, // bottom right
+		 1.0f,  1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  1.0f, 1.0f, // top right
 
-		  // Right face (x = +1) 
-		   1.0f, -1.0f, -1.0f,      1.0f,  0.0f,  0.0f,  0.0f, 0.0f, // bottom front
-		   1.0f,  1.0f,  1.0f,      1.0f,  0.0f,  0.0f,  1.0f, 1.0f, // top back
-		   1.0f, -1.0f,  1.0f,      1.0f,  0.0f,  0.0f,  1.0f, 0.0f, // bottom back
-		   1.0f, -1.0f, -1.0f,      1.0f,  0.0f,  0.0f,  0.0f, 0.0f, // bottom front
-		   1.0f,  1.0f, -1.0f,      1.0f,  0.0f,  0.0f,  0.0f, 1.0f, // top front
-		   1.0f,  1.0f,  1.0f,      1.0f,  0.0f,  0.0f,  1.0f, 1.0f, // top back
+		 // Right face (x = +1) 
+		 1.0f, -1.0f, -1.0f,      1.0f,  0.0f,  0.0f,  0.0f, 0.0f, // bottom front
+		 1.0f,  1.0f,  1.0f,      1.0f,  0.0f,  0.0f,  1.0f, 1.0f, // top back
+		 1.0f, -1.0f,  1.0f,      1.0f,  0.0f,  0.0f,  1.0f, 0.0f, // bottom back
+		 1.0f, -1.0f, -1.0f,      1.0f,  0.0f,  0.0f,  0.0f, 0.0f, // bottom front
+		 1.0f,  1.0f, -1.0f,      1.0f,  0.0f,  0.0f,  0.0f, 1.0f, // top front
+		 1.0f,  1.0f,  1.0f,      1.0f,  0.0f,  0.0f,  1.0f, 1.0f, // top back
 
-		   // Left face (x = -1) 
-		   -1.0f, -1.0f,  1.0f,     -1.0f,  0.0f,  0.0f,  0.0f, 0.0f, // bottom back
-		   -1.0f,  1.0f, -1.0f,     -1.0f,  0.0f,  0.0f,  1.0f, 1.0f, // top front
-		   -1.0f, -1.0f, -1.0f,     -1.0f,  0.0f,  0.0f,  1.0f, 0.0f, // bottom front
-		   -1.0f, -1.0f,  1.0f,     -1.0f,  0.0f,  0.0f,  0.0f, 0.0f, // bottom back
-		   -1.0f,  1.0f,  1.0f,     -1.0f,  0.0f,  0.0f,  0.0f, 1.0f, // top back
-		   -1.0f,  1.0f, -1.0f,     -1.0f,  0.0f,  0.0f,  1.0f, 1.0f, // top front
+		 // Left face (x = -1) 
+		-1.0f, -1.0f,  1.0f,     -1.0f,  0.0f,  0.0f,  0.0f, 0.0f, // bottom back
+		-1.0f,  1.0f, -1.0f,     -1.0f,  0.0f,  0.0f,  1.0f, 1.0f, // top front
+		-1.0f, -1.0f, -1.0f,     -1.0f,  0.0f,  0.0f,  1.0f, 0.0f, // bottom front
+		-1.0f, -1.0f,  1.0f,     -1.0f,  0.0f,  0.0f,  0.0f, 0.0f, // bottom back
+		-1.0f,  1.0f,  1.0f,     -1.0f,  0.0f,  0.0f,  0.0f, 1.0f, // top back
+		-1.0f,  1.0f, -1.0f,     -1.0f,  0.0f,  0.0f,  1.0f, 1.0f, // top front
 
-		   // Top face (y = +1)
-		   -1.0f,  1.0f, -1.0f,      0.0f,  1.0f,  0.0f,  0.0f, 0.0f, // front left
-			1.0f,  1.0f,  1.0f,      0.0f,  1.0f,  0.0f,  1.0f, 1.0f, // back right
-			1.0f,  1.0f, -1.0f,      0.0f,  1.0f,  0.0f,  1.0f, 0.0f, // front right
-		   -1.0f,  1.0f, -1.0f,      0.0f,  1.0f,  0.0f,  0.0f, 0.0f, // front left
-		   -1.0f,  1.0f,  1.0f,      0.0f,  1.0f,  0.0f,  0.0f, 1.0f, // back left
-			1.0f,  1.0f,  1.0f,      0.0f,  1.0f,  0.0f,  1.0f, 1.0f, // back right
+		// Top face (y = +1)
+		-1.0f,  1.0f, -1.0f,      0.0f,  1.0f,  0.0f,  0.0f, 0.0f, // front left
+		 1.0f,  1.0f,  1.0f,      0.0f,  1.0f,  0.0f,  1.0f, 1.0f, // back right
+		 1.0f,  1.0f, -1.0f,      0.0f,  1.0f,  0.0f,  1.0f, 0.0f, // front right
+		-1.0f,  1.0f, -1.0f,      0.0f,  1.0f,  0.0f,  0.0f, 0.0f, // front left
+		-1.0f,  1.0f,  1.0f,      0.0f,  1.0f,  0.0f,  0.0f, 1.0f, // back left
+		 1.0f,  1.0f,  1.0f,      0.0f,  1.0f,  0.0f,  1.0f, 1.0f, // back right
 
-		   -1.0f, -1.0f, -1.0f,      0.0f, -1.0f,  0.0f,  0.0f, 1.0f, // front left
-		    1.0f, -1.0f, -1.0f,      0.0f, -1.0f,  0.0f,  1.0f, 1.0f, // front right
-		   -1.0f, -1.0f,  1.0f,      0.0f, -1.0f,  0.0f,  0.0f, 0.0f, // back left
-
-			1.0f, -1.0f, -1.0f,      0.0f, -1.0f,  0.0f,  1.0f, 1.0f, // front right
-			1.0f, -1.0f,  1.0f,      0.0f, -1.0f,  0.0f,  1.0f, 0.0f, // back right
-		   -1.0f, -1.0f,  1.0f,      0.0f, -1.0f,  0.0f,  0.0f, 0.0f  // back left
+		// Bottom face (y = -1)
+		-1.0f, -1.0f, -1.0f,      0.0f, -1.0f,  0.0f,  0.0f, 1.0f, // front left
+		 1.0f, -1.0f, -1.0f,      0.0f, -1.0f,  0.0f,  1.0f, 1.0f, // front right
+		-1.0f, -1.0f,  1.0f,      0.0f, -1.0f,  0.0f,  0.0f, 0.0f, // back left
+		 1.0f, -1.0f, -1.0f,      0.0f, -1.0f,  0.0f,  1.0f, 1.0f, // front right
+		 1.0f, -1.0f,  1.0f,      0.0f, -1.0f,  0.0f,  1.0f, 0.0f, // back right
+		-1.0f, -1.0f,  1.0f,      0.0f, -1.0f,  0.0f,  0.0f, 0.0f  // back left
 	};
-
 
 	// Generate and bind vao for cube
 	glGenVertexArrays(1, &cubeVAO);
@@ -227,21 +229,21 @@ void Game::Initialise()
 	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
 
-	// Define stride
 	GLsizei stride = 8 * sizeof(float); 
-	// Position: 0
+	// Attrib ptrs
+	// Pos
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
 	glEnableVertexAttribArray(0);
-	// Normal: 1
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
+	
+	// Normal
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float))); //12 byte offset from stride
 	glEnableVertexAttribArray(1);
-	// Texture coordinate: 2
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float)));
+
+	// Tex
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float))); //24 byte offset from stride
 	glEnableVertexAttribArray(2);
-	// Unbind vao
-	glBindVertexArray(0);
 
-
+	glBindVertexArray(0); // Unbind
 }
 
 // Render method runs repeatedly in a loop
@@ -357,7 +359,23 @@ void Game::Update()
 	//m_pCamera->Set(m_pCamera->GetPosition(), glm::vec3(0, 0, 0), m_pCamera->GetUpVector());
 	//m_pCamera->Set(glm::vec3(0, 500, 0.1), glm::vec3(0, 0, 0), m_pCamera->GetUpVector());
 	// Update the camera using the amount of time that has elapsed to avoid framerate dependent motion
-	m_pCamera->Update(m_dt);
+	//m_pCamera->Update(m_dt);
+
+	m_currentDistance += m_dt * m_cameraSpeed;
+	glm::vec3 p;
+	glm::vec3 pNext;
+
+	// Calling these transfoms given point into interpolation along sampled distance
+	m_pCatmullRom->Sample(m_currentDistance, p);
+	m_pCatmullRom->Sample(m_currentDistance + 1.0f, pNext);
+
+	glm::vec3 T = glm::normalize(pNext - p); // Tangent 
+	glm::vec3 N = glm::normalize(glm::cross(T, glm::vec3(0, 1, 0))); // Normal
+	glm::vec3 B = glm::normalize(glm::cross(N, T)); // Binormal
+
+	//m_pCamera->Set(p, glm::vec3(0, 10, 0), glm::vec3(0, 1, 0));
+	m_pCamera->Set(p, p + 10.0f * T, B);
+
 	/*
 	// Moving and interpolating along the spline 
 	// Spline control points
@@ -512,6 +530,14 @@ LRESULT Game::ProcessEvents(HWND window,UINT message, WPARAM w_param, LPARAM l_p
 		switch(w_param) {
 		case VK_ESCAPE:
 			PostQuitMessage(0);
+			break;
+		case 'x':
+			m_cameraSpeed -= 0.01;
+			if (m_cameraSpeed < 0.01f) m_cameraSpeed = 0.01f;
+			break;
+		case 'c':
+			m_cameraSpeed += 0.01;
+			if (m_cameraSpeed > 0.2f) m_cameraSpeed = 0.2f;
 			break;
 		case '1':
 			m_pAudio->PlayEventSound();

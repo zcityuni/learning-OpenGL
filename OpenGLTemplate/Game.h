@@ -42,6 +42,8 @@ private:
 	double m_dt;
 	int m_framesPerSecond;
 	bool m_appActive;
+	float m_currentDistance;
+	float m_cameraSpeed;
 
 
 public:

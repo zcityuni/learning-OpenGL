@@ -217,10 +217,127 @@ void CCatmullRom::CreateCentreline()
 void CCatmullRom::CreateOffsetCurves()
 {
 	// Compute the offset curves, one left, and one right.  Store the points in m_leftOffsetPoints and m_rightOffsetPoints respectively
+	float w = 20.0f;
+
+	m_leftOffsetPoints.clear();
+	m_rightOffsetPoints.clear();
+
+	for (int i = 0; i < m_centrelinePoints.size(); ++i) {
+		glm::vec3 p = m_centrelinePoints[i];
+
+		glm::vec3 pNext = m_centrelinePoints[(i + 1) % m_centrelinePoints.size()]; // Wraparound
+
+		// TNB regen
+		glm::vec3 T = glm::normalize(pNext - p);
+		glm::vec3 N = glm::normalize(glm::cross(T, glm::vec3(0, 1, 0)));
+		glm::vec3 B = glm::normalize(glm::cross(N, T));
+
+		glm::vec3 l = p - (w / 2) * N; // l offset
+		glm::vec3 r = p + (w / 2) * N; // r offset
+
+		m_leftOffsetPoints.push_back(l);
+		m_rightOffsetPoints.push_back(r);
+	}
 
 	// Generate two VAOs called m_vaoLeftOffsetCurve and m_vaoRightOffsetCurve, each with a VBO, and get the offset curve points on the graphics card
 	// Note it is possible to only use one VAO / VBO with all the points instead.
 
+	// Left offset
+	// Generate and bind vao
+	glGenVertexArrays(1, &m_vaoLeftOffsetCurve);
+	glBindVertexArray(m_vaoLeftOffsetCurve);
+
+	// Generate and bind vbo and then upload vertices
+	GLuint leftVBO;
+	glGenBuffers(1, &leftVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, leftVBO);
+
+	std::vector<float> leftdata;
+	glm::vec2 tex(0.0f, 0.0f);
+	glm::vec3 normal(0.0f, 1.0f, 0.0f);
+
+	// Making the buffer content packed
+	for (const glm::vec3& point : m_leftOffsetPoints) {
+		// Pos
+		leftdata.push_back(point.x);
+		leftdata.push_back(point.y);
+		leftdata.push_back(point.z);
+
+		// Tex
+		leftdata.push_back(tex.x);
+		leftdata.push_back(tex.y);
+
+		// Normal
+		leftdata.push_back(normal.x);
+		leftdata.push_back(normal.y);
+		leftdata.push_back(normal.z);
+	}
+
+	glBufferData(GL_ARRAY_BUFFER, leftdata.size() * sizeof(float), leftdata.data(), GL_STATIC_DRAW);
+	GLuint stride = 8 * sizeof(float);
+
+	// Attrib ptrs
+	// Pos
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0); //void* 0 no offset
+
+	// Tex
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, (void*)(3*sizeof(float))); //12 byte offset from stride
+
+	// Normal
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)(6*sizeof(float))); //24 byte offset from stride
+
+
+	// Right offset
+	// Generate and bind vao
+	glGenVertexArrays(1, &m_vaoRightOffsetCurve);
+	glBindVertexArray(m_vaoRightOffsetCurve);
+
+	// Generate and bind vbo and then upload vertices
+	GLuint rightVBO;
+	glGenBuffers(1, &rightVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, rightVBO);
+
+	std::vector<float> rightdata;
+	glm::vec2 tex(0.0f, 0.0f);
+	glm::vec3 normal(0.0f, 1.0f, 0.0f);
+
+	// Making the buffer content packed
+	for (const glm::vec3& point : m_leftOffsetPoints) {
+		// Pos
+		rightdata.push_back(point.x);
+		rightdata.push_back(point.y);
+		rightdata.push_back(point.z);
+
+		// Tex
+		rightdata.push_back(tex.x);
+		rightdata.push_back(tex.y);
+
+		// Normal
+		rightdata.push_back(normal.x);
+		rightdata.push_back(normal.y);
+		rightdata.push_back(normal.z);
+	}
+
+	glBufferData(GL_ARRAY_BUFFER, rightdata.size() * sizeof(float), rightdata.data(), GL_STATIC_DRAW);
+	GLuint stride = 8 * sizeof(float);
+
+	// Attrib ptrs
+	// Pos
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0); //void* 0 no offset
+
+	// Tex
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float))); //12 byte offset from stride
+
+	// Normal
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float))); //24 byte offset from stride
+	
+	glBindVertexArray(0); // Unbind
 
 }
 
@@ -251,8 +368,22 @@ void CCatmullRom::RenderCentreline()
 void CCatmullRom::RenderOffsetCurves()
 {
 	// Bind the VAO m_vaoLeftOffsetCurve and render it
+	glBindVertexArray(m_vaoLeftOffsetCurve);
+	glPointSize(3.0f);
+	glDrawArrays(GL_POINTS, 0, m_leftOffsetPoints.size());
+
+	glLineWidth(1.5f);
+	glDrawArrays(GL_LINE_LOOP, 0, m_leftOffsetPoints.size());
 
 	// Bind the VAO m_vaoRightOffsetCurve and render it
+	glBindVertexArray(m_vaoRightOffsetCurve);
+	glPointSize(3.0f);
+	glDrawArrays(GL_POINTS, 0, m_rightOffsetPoints.size());
+
+	glLineWidth(1.5f);
+	glDrawArrays(GL_LINE_LOOP, 0, m_rightOffsetPoints.size());
+
+	glBindVertexArray(0);
 }
 
 
