@@ -283,11 +283,11 @@ void CCatmullRom::CreateOffsetCurves()
 
 	// Tex
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, (void*)(3*sizeof(float))); //12 byte offset from stride
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*)(3*sizeof(float))); //12 byte offset from stride
 
 	// Normal
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)(6*sizeof(float))); //24 byte offset from stride
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride, (void*)(6*sizeof(float))); //24 byte offset from stride
 
 
 	// Right offset
@@ -303,7 +303,7 @@ void CCatmullRom::CreateOffsetCurves()
 	std::vector<float> rightdata;
 
 	// Making the buffer content packed
-	for (const glm::vec3& point : m_leftOffsetPoints) {
+	for (const glm::vec3& point : m_rightOffsetPoints) {
 		// Pos
 		rightdata.push_back(point.x);
 		rightdata.push_back(point.y);
@@ -328,11 +328,11 @@ void CCatmullRom::CreateOffsetCurves()
 
 	// Tex
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float))); //12 byte offset from stride
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float))); //12 byte offset from stride
 
 	// Normal
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float))); //24 byte offset from stride
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float))); //24 byte offset from stride
 	
 	glBindVertexArray(0); // Unbind
 
@@ -356,7 +356,7 @@ void CCatmullRom::RenderCentreline()
 	glDrawArrays(GL_POINTS, 0, m_centrelinePoints.size());
 	// Render the centreline as a line loop
 	glLineWidth(2.0f);
-	glDrawArrays(GL_LINE_LOOP, 0, m_centrelinePoints.size());
+	glDrawArrays(GL_LINE_STRIP, 0, m_centrelinePoints.size());
 
 	glBindVertexArray(0);
 
