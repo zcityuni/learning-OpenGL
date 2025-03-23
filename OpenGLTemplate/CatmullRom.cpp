@@ -301,8 +301,6 @@ void CCatmullRom::CreateOffsetCurves()
 	glBindBuffer(GL_ARRAY_BUFFER, rightVBO);
 
 	std::vector<float> rightdata;
-	glm::vec2 tex(0.0f, 0.0f);
-	glm::vec3 normal(0.0f, 1.0f, 0.0f);
 
 	// Making the buffer content packed
 	for (const glm::vec3& point : m_leftOffsetPoints) {
@@ -322,7 +320,6 @@ void CCatmullRom::CreateOffsetCurves()
 	}
 
 	glBufferData(GL_ARRAY_BUFFER, rightdata.size() * sizeof(float), rightdata.data(), GL_STATIC_DRAW);
-	GLuint stride = 8 * sizeof(float);
 
 	// Attrib ptrs
 	// Pos
@@ -360,7 +357,7 @@ void CCatmullRom::RenderCentreline()
 	// Render the centreline as a line loop
 	glLineWidth(2.0f);
 	glDrawArrays(GL_LINE_LOOP, 0, m_centrelinePoints.size());
-	// Unbind the VAO
+
 	glBindVertexArray(0);
 
 }
