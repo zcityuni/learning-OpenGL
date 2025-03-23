@@ -159,15 +159,21 @@ void Game::Initialise()
 	m_pFtFont->SetShaderProgram(pFontProgram);
 
 
+	// Raw catmullrom spline creation
+	/*
 	// Spline path creation (to visualise not to move along, that would be done in Game::Update())
 	glm::vec3 p1 = glm::vec3(-50.0f, 10.0f, 150.0f);  // Start of the arc
 	glm::vec3 p2 = glm::vec3(120.0f, 10.0f, -20.0f);  // End of the arc
-
 	// Control points
 	glm::vec3 p0 = glm::vec3(100.0f, 10.0f, 250.0f);  
 	glm::vec3 p3 = glm::vec3(1150.0f, 10.0f, 550.0f);
 	//m_pCatmullRom->CreatePath(p0, p1, p2, p3);
+	*/
+	
+	// New path creation using better catmullrom spline implementation
 	m_pCatmullRom->CreateCentreline();
+	m_pCatmullRom->CreateOffsetCurves();
+
 	
 	// Put into a different class soon
 	float cubeVertices[] = {
@@ -326,9 +332,12 @@ void Game::Render()
 		pMainProgram->SetUniform("bUseTexture", false);
 		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 		pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-		m_pCatmullRom->RenderCentreline();
+		
+		
 	modelViewMatrixStack.Pop();
 
+	m_pCatmullRom->RenderCentreline();
+	m_pCatmullRom->RenderOffsetCurves();
 
 
 	// Set up your transformation matrix for the cube
@@ -356,7 +365,6 @@ void Game::Render()
 // Update method runs repeatedly with the Render method
 void Game::Update() 
 {
-	//m_pCamera->Set(m_pCamera->GetPosition(), glm::vec3(0, 0, 0), m_pCamera->GetUpVector());
 	//m_pCamera->Set(glm::vec3(0, 500, 0.1), glm::vec3(0, 0, 0), m_pCamera->GetUpVector());
 	// Update the camera using the amount of time that has elapsed to avoid framerate dependent motion
 	//m_pCamera->Update(m_dt);
@@ -374,8 +382,10 @@ void Game::Update()
 	glm::vec3 B = glm::normalize(glm::cross(N, T)); // Binormal
 
 	//m_pCamera->Set(p, glm::vec3(0, 10, 0), glm::vec3(0, 1, 0));
-	m_pCamera->Set(p, p + 10.0f * T, B);
+	m_pCamera->Set(p+glm::vec3(0, 5.0f, 0), p + 10.0f * T, B);
+	//m_pCamera->Set(p+glm::vec3(0, 5.0f, 0), glm::vec3(0, 10, 0), B);
 
+	// Raw implementation of catmullrom spline camera movement
 	/*
 	// Moving and interpolating along the spline 
 	// Spline control points
