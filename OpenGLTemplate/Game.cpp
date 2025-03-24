@@ -173,6 +173,7 @@ void Game::Initialise()
 	// New path creation using better catmullrom spline implementation
 	m_pCatmullRom->CreateCentreline();
 	m_pCatmullRom->CreateOffsetCurves();
+	m_pCatmullRom->CreateTrack();
 
 	
 	// Put into a different class soon
@@ -338,6 +339,7 @@ void Game::Render()
 
 	m_pCatmullRom->RenderCentreline();
 	m_pCatmullRom->RenderOffsetCurves();
+	m_pCatmullRom->RenderTrack();
 
 
 	// Set up your transformation matrix for the cube
