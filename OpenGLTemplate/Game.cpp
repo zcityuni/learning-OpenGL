@@ -43,7 +43,9 @@ Source code drawn from a number of sources and examples, including contributions
 #include "Audio.h"
 #include "CatmullRom.h"
 
-GLuint cubeVAO, cubeVBO, cubeEBO;
+// For old cube creation now moved to seperate class
+//GLuint cubeVAO, cubeVBO, cubeEBO;
+//CTexture m_goldTexture;
 
 // Constructor
 Game::Game()
@@ -159,7 +161,7 @@ void Game::Initialise()
 	m_pFtFont->SetShaderProgram(pFontProgram);
 
 
-	// Raw catmullrom spline creation
+	// Raw catmullrom spline Visual Path creation
 	/*
 	// Spline path creation (to visualise not to move along, that would be done in Game::Update())
 	glm::vec3 p1 = glm::vec3(-50.0f, 10.0f, 150.0f);  // Start of the arc
@@ -175,82 +177,6 @@ void Game::Initialise()
 	m_pCatmullRom->CreateOffsetCurves();
 	m_pCatmullRom->CreateTrack();
 
-	
-	// Put into a different class soon
-	float cubeVertices[] = {
-		// Front face (z = -1) ccw
-		//  Position              Normal             Tex
-		-1.0f, -1.0f, -1.0f,      0.0f,  0.0f, -1.0f,  0.0f, 0.0f, // bottom left
-		 1.0f,  1.0f, -1.0f,      0.0f,  0.0f, -1.0f,  1.0f, 1.0f, // top right
-		 1.0f, -1.0f, -1.0f,      0.0f,  0.0f, -1.0f,  1.0f, 0.0f, // bottom right
-		-1.0f, -1.0f, -1.0f,      0.0f,  0.0f, -1.0f,  0.0f, 0.0f, // bottom left
-		-1.0f,  1.0f, -1.0f,      0.0f,  0.0f, -1.0f,  0.0f, 1.0f, // top left
-		 1.0f,  1.0f, -1.0f,      0.0f,  0.0f, -1.0f,  1.0f, 1.0f, // top right
-
-		 // Back face (z = +1) 
-		-1.0f, -1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  0.0f, 0.0f, // bottom left
-		 1.0f, -1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  1.0f, 0.0f, // bottom right
-		-1.0f,  1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  0.0f, 1.0f, // top left
-		-1.0f,  1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  0.0f, 1.0f, // top left
-		 1.0f, -1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  1.0f, 0.0f, // bottom right
-		 1.0f,  1.0f,  1.0f,      0.0f,  0.0f,  1.0f,  1.0f, 1.0f, // top right
-
-		 // Right face (x = +1) 
-		 1.0f, -1.0f, -1.0f,      1.0f,  0.0f,  0.0f,  0.0f, 0.0f, // bottom front
-		 1.0f,  1.0f,  1.0f,      1.0f,  0.0f,  0.0f,  1.0f, 1.0f, // top back
-		 1.0f, -1.0f,  1.0f,      1.0f,  0.0f,  0.0f,  1.0f, 0.0f, // bottom back
-		 1.0f, -1.0f, -1.0f,      1.0f,  0.0f,  0.0f,  0.0f, 0.0f, // bottom front
-		 1.0f,  1.0f, -1.0f,      1.0f,  0.0f,  0.0f,  0.0f, 1.0f, // top front
-		 1.0f,  1.0f,  1.0f,      1.0f,  0.0f,  0.0f,  1.0f, 1.0f, // top back
-
-		 // Left face (x = -1) 
-		-1.0f, -1.0f,  1.0f,     -1.0f,  0.0f,  0.0f,  0.0f, 0.0f, // bottom back
-		-1.0f,  1.0f, -1.0f,     -1.0f,  0.0f,  0.0f,  1.0f, 1.0f, // top front
-		-1.0f, -1.0f, -1.0f,     -1.0f,  0.0f,  0.0f,  1.0f, 0.0f, // bottom front
-		-1.0f, -1.0f,  1.0f,     -1.0f,  0.0f,  0.0f,  0.0f, 0.0f, // bottom back
-		-1.0f,  1.0f,  1.0f,     -1.0f,  0.0f,  0.0f,  0.0f, 1.0f, // top back
-		-1.0f,  1.0f, -1.0f,     -1.0f,  0.0f,  0.0f,  1.0f, 1.0f, // top front
-
-		// Top face (y = +1)
-		-1.0f,  1.0f, -1.0f,      0.0f,  1.0f,  0.0f,  0.0f, 0.0f, // front left
-		 1.0f,  1.0f,  1.0f,      0.0f,  1.0f,  0.0f,  1.0f, 1.0f, // back right
-		 1.0f,  1.0f, -1.0f,      0.0f,  1.0f,  0.0f,  1.0f, 0.0f, // front right
-		-1.0f,  1.0f, -1.0f,      0.0f,  1.0f,  0.0f,  0.0f, 0.0f, // front left
-		-1.0f,  1.0f,  1.0f,      0.0f,  1.0f,  0.0f,  0.0f, 1.0f, // back left
-		 1.0f,  1.0f,  1.0f,      0.0f,  1.0f,  0.0f,  1.0f, 1.0f, // back right
-
-		// Bottom face (y = -1)
-		-1.0f, -1.0f, -1.0f,      0.0f, -1.0f,  0.0f,  0.0f, 1.0f, // front left
-		 1.0f, -1.0f, -1.0f,      0.0f, -1.0f,  0.0f,  1.0f, 1.0f, // front right
-		-1.0f, -1.0f,  1.0f,      0.0f, -1.0f,  0.0f,  0.0f, 0.0f, // back left
-		 1.0f, -1.0f, -1.0f,      0.0f, -1.0f,  0.0f,  1.0f, 1.0f, // front right
-		 1.0f, -1.0f,  1.0f,      0.0f, -1.0f,  0.0f,  1.0f, 0.0f, // back right
-		-1.0f, -1.0f,  1.0f,      0.0f, -1.0f,  0.0f,  0.0f, 0.0f  // back left
-	};
-
-	// Generate and bind vao for cube
-	glGenVertexArrays(1, &cubeVAO);
-	glBindVertexArray(cubeVAO);
-	// Generate and bind vbo and then upload vertices
-	glGenBuffers(1, &cubeVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
-
-	GLsizei stride = 8 * sizeof(float); 
-	// Attrib ptrs
-	// Pos
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
-	glEnableVertexAttribArray(0);
-	
-	// Normal
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float))); //12 byte offset from stride
-	glEnableVertexAttribArray(1);
-
-	// Tex
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float))); //24 byte offset from stride
-	glEnableVertexAttribArray(2);
-
-	glBindVertexArray(0); // Unbind
 }
 
 // Render method runs repeatedly in a loop
@@ -333,8 +259,6 @@ void Game::Render()
 		pMainProgram->SetUniform("bUseTexture", false);
 		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
 		pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
-		
-		
 	modelViewMatrixStack.Pop();
 
 	m_pCatmullRom->RenderCentreline();
@@ -344,16 +268,16 @@ void Game::Render()
 
 	// Set up your transformation matrix for the cube
 	modelViewMatrixStack.Push();
-	// For example, translate the cube  to (x, y, z)
-	modelViewMatrixStack.Scale(5.0f);
-	modelViewMatrixStack.Translate(glm::vec3(0.0f, 10.0f, 0.0f));
-	pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
-	pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
+		// For example, translate the cube  to (x, y, z)
+		modelViewMatrixStack.Scale(5.0f);
+		modelViewMatrixStack.Translate(glm::vec3(0.0f, 10.0f, 0.0f));
+		pMainProgram->SetUniform("matrices.modelViewMatrix", modelViewMatrixStack.Top());
+		pMainProgram->SetUniform("matrices.normalMatrix", m_pCamera->ComputeNormalMatrix(modelViewMatrixStack.Top()));
 
-	// Bind the cube VAO and render it
-	glBindVertexArray(cubeVAO);
-	glDrawArrays(GL_TRIANGLES, 0, 36); // 36 vertices cube
-	glBindVertexArray(0);
+		// Bind the cube VAO and render it
+		//glBindVertexArray(cubeVAO);
+		//glDrawArrays(GL_TRIANGLES, 0, 36); // 36 vertices cube
+		//glBindVertexArray(0);
 	modelViewMatrixStack.Pop();
 
 	// Draw the 2D graphics after the 3D graphics
@@ -369,7 +293,7 @@ void Game::Update()
 {
 	//m_pCamera->Set(glm::vec3(0, 500, 0.1), glm::vec3(0, 0, 0), m_pCamera->GetUpVector());
 	// Update the camera using the amount of time that has elapsed to avoid framerate dependent motion
-	//m_pCamera->Update(m_dt);
+	m_pCamera->Update(m_dt);
 
 	m_currentDistance += m_dt * m_cameraSpeed;
 	glm::vec3 p;
@@ -384,7 +308,7 @@ void Game::Update()
 	glm::vec3 B = glm::normalize(glm::cross(N, T)); // Binormal
 
 	//m_pCamera->Set(p, glm::vec3(0, 10, 0), glm::vec3(0, 1, 0));
-	m_pCamera->Set(p+glm::vec3(0, 5.0f, 0), p + 10.0f * T, B);
+	//m_pCamera->Set(p+glm::vec3(0, 5.0f, 0), p + 10.0f * T, B);
 	//m_pCamera->Set(p+glm::vec3(0, 5.0f, 0), glm::vec3(0, 10, 0), B);
 
 	// Raw implementation of catmullrom spline camera movement

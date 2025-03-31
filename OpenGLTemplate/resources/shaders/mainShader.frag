@@ -17,18 +17,19 @@ void main()
 
 
 	if (renderSkybox) {
-		vOutputColour = texture(CubeMapTex, worldPosition);
+        vOutputColour = texture(CubeMapTex, worldPosition);
+    } else {
+        // Get the texel colour from the texture sampler
+        vec4 vTexColour = texture(sampler0, vTexCoord);
 
-	} else {
+        if (bUseTexture)
+            // Use the raw texture color
+            vOutputColour = vTexColour;  
+        else
+            // Or just the vertex colour if texture is off
+            vOutputColour = vec4(vColour, 1.0f);
+    }
 
-		// Get the texel colour from the texture sampler
-		vec4 vTexColour = texture(sampler0, vTexCoord);	
-
-		if (bUseTexture)
-			vOutputColour = vTexColour*vec4(vColour, 1.0f);	// Combine object colour and texture 
-		else
-			vOutputColour = vec4(vColour, 1.0f);	// Just use the colour instead
-	}
 	
 	
 }
